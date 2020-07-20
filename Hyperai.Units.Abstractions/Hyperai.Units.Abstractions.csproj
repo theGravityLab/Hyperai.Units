@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Hyperai.Units</RootNamespace>
+    <AssemblyVersion>2020.7.20</AssemblyVersion>
+    <PackageId>Hyperai.Units.Abstractions</PackageId>
+    <Version>2020.7.20</Version>
+    <Authors>GravityLab</Authors>
+    <Company>Unicore</Company>
+    <PackageDescription>Hyperai.Units.Abstractions</PackageDescription>
+    <RepositoryUrl>https://github.com/theGravityLab/Hyperai.Units.Abstractions</RepositoryUrl>
+    <Product>Hyperai.Units</Product>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hyperai.Abstractions" Version="2020.7.20" />
+  </ItemGroup>
+
+
+</Project>
