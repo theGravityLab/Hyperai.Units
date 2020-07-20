@@ -16,7 +16,8 @@ jobs:
         dotnet-version: 3.1.101
     - name: Install dependencies
       run: |
-        dotnet restore
+        dotnet restore Hyperai.Units.Abstractions
+        dotnet restore Hyperai.Units.Abstractions.Tests
     - name: Build
       run: |
         dotnet build --configuration Release --no-restore Hyperai.Units.Abstractions
@@ -43,7 +44,8 @@ jobs:
         dotnet-version: 3.1.101
     - name: Install dependencies
       run: |
-        dotnet restore
+        dotnet restore Hyperai.Units
+        dotnet restore Hyperai.Units.Tests
     - name: Build
       run: |
         dotnet build --configuration Release --no-restore Hyperai.Units
