@@ -2,19 +2,27 @@
 using Hyperai.Middlewares;
 using Hyperai.Relations;
 using Hyperai.Services;
+using Microsoft.Extensions.Logging;
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace Hyperai.Units
 {
     public class UnitMiddleware : IMiddleware
     {
         private readonly IUnitService _service;
+        private readonly ILogger _logger;
 
-        public UnitMiddleware(IUnitService service)
+        private readonly Stopwatch stopwatch = new Stopwatch();
+
+        public UnitMiddleware(IUnitService service, ILogger<UnitMiddleware> logger)
         {
             _service = service;
+            _logger = logger;
         }
         public bool Run(IApiClient sender, GenericEventArgs args)
         {
+            stopwatch.Start();
             MessageContext context = new MessageContext()
             {
                 SentAt = args.Time,
@@ -35,8 +43,16 @@ namespace Hyperai.Units
                     context.Message = fm.Message;
                     context.Type = MessageEventType.Friend;
                     break;
+                default:
+                    return true;
             }
+            stopwatch.Stop();
+            var prepare = stopwatch.ElapsedMilliseconds;
+            stopwatch.Restart();
             _service.Handle(context);
+            stopwatch.Stop();
+            _logger.LogDebug("Handling for Unit Actions took {} milliseconds(routing = {}): {}", stopwatch.ElapsedMilliseconds + prepare, stopwatch.ElapsedMilliseconds, context.Message);
+            stopwatch.Reset();
             return true;
         }
     }
