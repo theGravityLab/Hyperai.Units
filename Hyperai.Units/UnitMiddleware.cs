@@ -3,7 +3,6 @@ using Hyperai.Middlewares;
 using Hyperai.Relations;
 using Hyperai.Services;
 using Microsoft.Extensions.Logging;
-using System.ComponentModel;
 using System.Diagnostics;
 
 namespace Hyperai.Units
@@ -47,7 +46,7 @@ namespace Hyperai.Units
                     return true;
             }
             stopwatch.Stop();
-            var prepare = stopwatch.ElapsedMilliseconds;
+            long prepare = stopwatch.ElapsedMilliseconds;
             stopwatch.Restart();
             _service.Handle(context);
             stopwatch.Stop();
