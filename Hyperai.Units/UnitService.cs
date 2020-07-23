@@ -167,6 +167,7 @@ namespace Hyperai.Units
                         {
                             _ when para.ParameterType == typeof(string) => names[para.Name],
                             _ when para.ParameterType == typeof(MessageChain) => _parser.Parse(names[para.Name]),
+                            _ when typeof(MessageComponent).IsAssignableFrom(para.ParameterType) => _parser.Parse(names[para.Name]).FirstOrDefault(x => x.GetType() == para.ParameterType),
                             _ when para.ParameterType != typeof(string) && para.ParameterType.IsValueType => typeof(Convert).GetMethod("To" + para.ParameterType.Name, new Type[] { typeof(string) }).Invoke(null, new object[] { names[para.Name] }),
                             _ => throw new NotImplementedException("Pattern type not supported: " + para.ParameterType.FullName),
                         };
