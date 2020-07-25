@@ -6,7 +6,6 @@ namespace Hyperai.Units
     {
         public static IServiceCollection AddUnits(this IServiceCollection services)
         {
-
             services.AddSingleton<IUnitService, UnitService>();
             return services;
         }

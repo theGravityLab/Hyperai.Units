@@ -11,6 +11,7 @@ namespace Hyperai.Units.Attributes
         public Regex Pattern { get; private set; }
         public string RawString { get; private set; }
         public IEnumerable<string> Names { get; private set; }
+
         public ExtractAttribute(string pattern)
         {
             RawString = pattern;

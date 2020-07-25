@@ -7,6 +7,7 @@ namespace Hyperai.Units.Attributes
     {
         public IFilter Filter { get; set; }
         public string FailureMessage { get; set; }
+
         public FilterByAttribute(IFilter filter, string message = null)
         {
             Filter = filter;
