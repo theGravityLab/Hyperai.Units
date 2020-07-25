@@ -29,6 +29,7 @@ namespace Hyperai.Units
                 CreatedAt = DateTime.Now;
             }
         }
+
         private readonly Dictionary<Channel, Queue<QueueEntry>> invaders = new Dictionary<Channel, Queue<QueueEntry>>();
         private IEnumerable<ActionEntry> entries = null;
 
@@ -89,8 +90,10 @@ namespace Hyperai.Units
 
                 return;
             }
+
             #region Extract Check
-            string message = _formatter.Format(context.Message.AsReadable());
+
+            string message = _formatter.Format(new MessageChain(context.Message.Where(x => !(x is Source))));
             ExtractAttribute extract = entry.Action.GetCustomAttribute<ExtractAttribute>();
             Dictionary<string, string> dict = new Dictionary<string, string>();
 
@@ -114,9 +117,11 @@ namespace Hyperai.Units
                     return;
                 }
             }
-            #endregion
+
+            #endregion Extract Check
 
             #region Filter Check
+
             object[] filterBys = entry.Action.GetCustomAttributes(typeof(FilterByAttribute), false);
             string failureMessage = null;
             bool pass = filterBys.All(x =>
@@ -139,16 +144,20 @@ namespace Hyperai.Units
                         case MessageEventType.Friend:
                             context.Client.SendFriendMessageAsync((Friend)context.User, chain).Wait();
                             break;
+
                         case MessageEventType.Group:
                             context.Client.SendGroupMessageAsync(context.Group, chain).Wait();
                             break;
+
                         default:
                             throw new NotImplementedException();
                     }
                 }
                 return;
             }
-            #endregion
+
+            #endregion Filter Check
+
             InvokeOne(entry, context, dict);
         }
 
@@ -177,7 +186,7 @@ namespace Hyperai.Units
                         // context
                         paList[para.Position] = para.ParameterType switch
                         {
-                            _ when para.ParameterType == typeof(string) => _formatter.Format(context.Message.AsReadable()),
+                            _ when para.ParameterType == typeof(string) => _formatter.Format(new MessageChain(context.Message.Where(x => !(x is Source)))),
                             _ when para.ParameterType == typeof(Relations.Group) => context.Group,
                             _ when para.ParameterType == typeof(Self) => context.Me,
                             _ when para.ParameterType == typeof(MessageChain) => context.Message,
@@ -231,6 +240,7 @@ namespace Hyperai.Units
                     context.Client.SendFriendMessageAsync((Friend)context.User, chain).Wait();
                     WaitOne(new Channel() { UserId = context.User.Identity }, Delegate, TimeSpan.FromMinutes(1));
                     break;
+
                 case MessageEventType.Group:
                     context.Client.SendGroupMessageAsync(context.Group, chain).Wait();
                     WaitOne(new Channel() { UserId = context.User.Identity, GroupId = context.Group.Identity }, Delegate, TimeSpan.FromMinutes(1));
@@ -239,7 +249,7 @@ namespace Hyperai.Units
 
             void Delegate(MessageContext message)
             {
-                dict[waitingName] = _formatter.Format(message.Message.AsReadable());
+                dict[waitingName] = _formatter.Format(new MessageChain(context.Message.Where(x => !(x is Source))));
                 if (!CheckNames(dict, context, entry, raw))
                 {
                     InvokeOne(entry, context, dict);

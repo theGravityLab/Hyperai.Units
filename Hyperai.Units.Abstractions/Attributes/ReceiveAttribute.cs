@@ -7,11 +7,14 @@ namespace Hyperai.Units.Attributes
     public class ReceiveAttribute : Attribute
     {
         public MessageEventType Type { get; set; }
+
         public ReceiveAttribute(MessageEventType type)
         {
             Type = type;
         }
 
-        public ReceiveAttribute() : this(MessageEventType.Friend) { }
+        public ReceiveAttribute() : this(MessageEventType.Friend)
+        {
+        }
     }
 }

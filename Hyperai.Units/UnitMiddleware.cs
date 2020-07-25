@@ -19,6 +19,7 @@ namespace Hyperai.Units
             _service = service;
             _logger = logger;
         }
+
         public bool Run(IApiClient sender, GenericEventArgs args)
         {
             stopwatch.Start();
@@ -37,11 +38,13 @@ namespace Hyperai.Units
                     context.Message = gm.Message;
                     context.Type = MessageEventType.Group;
                     break;
+
                 case FriendMessageEventArgs fm:
                     context.User = fm.User;
                     context.Message = fm.Message;
                     context.Type = MessageEventType.Friend;
                     break;
+
                 default:
                     return true;
             }
