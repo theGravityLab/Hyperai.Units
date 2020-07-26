@@ -1,9 +1,13 @@
 ﻿using Hyperai.Events;
+using Hyperai.Messages;
 using Hyperai.Middlewares;
 using Hyperai.Relations;
 using Hyperai.Services;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 
 namespace Hyperai.Units
 {
@@ -22,6 +26,17 @@ namespace Hyperai.Units
 
         public bool Run(IApiClient sender, GenericEventArgs args)
         {
+            if (args is MessageEventArgs messageArgs)
+            {
+                // 该消息无法被序列化
+                // 没必要继续下去
+                if (messageArgs.Message.Any(x => x.GetType().GetCustomAttribute<SerializableAttribute>() == null)) return true;
+            }
+            else
+            {
+                // 连消息事件都不是, 就更没必要了
+                return true;
+            }
             stopwatch.Start();
             MessageContext context = new MessageContext()
             {
@@ -35,13 +50,13 @@ namespace Hyperai.Units
                 case GroupMessageEventArgs gm:
                     context.Group = gm.Group;
                     context.User = gm.User;
-                    context.Message = gm.Message;
+                    context.Message = gm.Message.AsReadable();
                     context.Type = MessageEventType.Group;
                     break;
 
                 case FriendMessageEventArgs fm:
                     context.User = fm.User;
-                    context.Message = fm.Message;
+                    context.Message = fm.Message.AsReadable();
                     context.Type = MessageEventType.Friend;
                     break;
 
