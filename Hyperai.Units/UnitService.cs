@@ -236,7 +236,6 @@ namespace Hyperai.Units
                 dict[waitingName] = (newContext.Message, dict[waitingName].Item2, true);
                 if (!CheckNamesAndWait(dict, context, entry, orderedNames, raw))
                 {
-                    // TODO: 将 context.Message 替换为正确的 messagechain
                     string text = _formatter.Format(context.Message);
                     StringBuilder builder = new StringBuilder();
                     int start = 0;
