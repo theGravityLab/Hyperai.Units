@@ -236,20 +236,22 @@ namespace Hyperai.Units
                 dict[waitingName] = (newContext.Message, dict[waitingName].Item2, true);
                 if (!CheckNamesAndWait(dict, context, entry, orderedNames, raw))
                 {
-                    string text = _formatter.Format(context.Message);
-                    StringBuilder builder = new StringBuilder();
-                    int start = 0;
-                    foreach (string name in orderedNames)
-                    {
-                        if (dict[name].Item3)
-                        {
-                            builder.Append(text.Substring(start, dict[name].Item2 - start));
-                            builder.Append(_formatter.Format(dict[name].Item1));
-                            start = dict[name].Item2 + 2;
-                        }
-                    }
-                    if (start < text.Length) builder.Append(text.Substring(start));
-                    context.Message = _parser.Parse(builder.ToString());
+                    //string text = _formatter.Format(context.Message);
+                    //StringBuilder builder = new StringBuilder();
+                    //int start = 0;
+                    //foreach (string name in orderedNames)
+                    //{
+                    //    if (dict[name].Item3)
+                    //    {
+                    //        builder.Append(text.Substring(start, dict[name].Item2 - start));
+                    //        builder.Append(_formatter.Format(dict[name].Item1));
+                    //        start = dict[name].Item2 + 2;
+                    //    }
+                    //}
+                    //if (start < text.Length) builder.Append(text.Substring(start));
+
+                    // 就不应该应用到原来的 Context.Message里
+                    // context.Message = _parser.Parse(builder.ToString());
                     InvokeOne(entry, context, dict);
                 }
             }
@@ -259,7 +261,7 @@ namespace Hyperai.Units
         {
             foreach (string key in names.Keys)
             {
-                if (names[key].ToString() == "{}")
+                if (names[key].Item1.ToString() == "{}")
                 {
                     WaitForInput(entry, context, names, key, orderedNames, raw);
                     return true;
