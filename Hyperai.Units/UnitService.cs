@@ -108,9 +108,9 @@ namespace Hyperai.Units
                 if (match.Success)
                 {
                     string[] names = extract.Names.ToArray();
-                    for (int i = 0; i < match.Groups.Count; i++)
+                    for (int i = 1; i < match.Groups.Count; i++)
                     {
-                        dict.Add(names[i], (_parser.Parse(match.Groups[i + 1].Value), match.Groups[i + 1].Index, false));
+                        dict.Add(names[i - 1], (_parser.Parse(match.Groups[i].Value), match.Groups[i].Index, false));
                     }
                     if (CheckNamesAndWait(dict, context, entry, extract.Names, extract.RawString))
                     {
