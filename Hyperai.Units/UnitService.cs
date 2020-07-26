@@ -168,12 +168,12 @@ namespace Hyperai.Units
                         paList[para.Position] = para.ParameterType switch
                         {
                             _ when para.ParameterType == typeof(string) => _formatter.Format(names[para.Name].Item1),
-                            _ when para.ParameterType == typeof(MessageChain) => names[para.Name],
+                            _ when para.ParameterType == typeof(MessageChain) => names[para.Name].Item1,
                             _ when typeof(MessageComponent).IsAssignableFrom(para.ParameterType) => names[para.Name].Item1.FirstOrDefault(x => x.GetType() == para.ParameterType),
                             // _ when para.ParameterType == typeof(Member) && names[para.Name].Any(x
                             // => x is At) => GetMember(((At)names[para.Name].First(x => x is At)).TargetId),
                             // unit 不应该即时计算
-                            _ when para.ParameterType != typeof(string) && para.ParameterType.IsValueType => typeof(Convert).GetMethod("To" + para.ParameterType.Name, new Type[] { typeof(string) }).Invoke(null, new object[] { names[para.Name] }),
+                            _ when para.ParameterType != typeof(string) && para.ParameterType.IsValueType => typeof(Convert).GetMethod("To" + para.ParameterType.Name, new Type[] { typeof(string) }).Invoke(null, new object[] { _formatter.Format(names[para.Name].Item1) }),
                             _ => throw new NotImplementedException("Pattern type not supported: " + para.ParameterType.FullName),
                         };
                     }
