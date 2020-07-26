@@ -16,6 +16,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hyperai.Abstractions" Version="2020.7.24" />
+    <PackageReference Include="Hyperai.Abstractions" Version="2020.7.25" />
   </ItemGroup>
 </Project>
