@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Hyperai.Messages.ConcreteModels;
+using System;
 using System.Collections.Generic;
-using Hyperai.Messages.ConcreteModels;
 
 namespace Hyperai.Units
 {

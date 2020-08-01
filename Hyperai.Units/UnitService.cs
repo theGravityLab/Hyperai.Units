@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Hyperai.Units
@@ -63,7 +62,7 @@ namespace Hyperai.Units
                         }
                         else
                         {
-                            var chain = new MessageComponent[] { new Plain("❌你没能在时限内提供完整参数, 该操作已取消.") };
+                            MessageComponent[] chain = new MessageComponent[] { new Plain("❌你没能在时限内提供完整参数, 该操作已取消.") };
                             context.ReplyAsync(new MessageChain(chain)).Wait();
                         }
                         flag = true;
@@ -96,35 +95,6 @@ namespace Hyperai.Units
                 return;
             }
 
-            #region Extract Check
-
-            string message = _formatter.Format(context.Message);
-            ExtractAttribute extract = entry.Action.GetCustomAttribute<ExtractAttribute>();
-            Dictionary<string, (MessageChain, int, bool)> dict = new Dictionary<string, (MessageChain, int, bool)>();
-
-            if (extract != null)
-            {
-                Match match = extract.Pattern.Match(message);
-                if (match.Success)
-                {
-                    string[] names = extract.Names.ToArray();
-                    for (int i = 1; i < match.Groups.Count; i++)
-                    {
-                        dict.Add(names[i - 1], (_parser.Parse(match.Groups[i].Value), match.Groups[i].Index, false));
-                    }
-                    if (CheckNamesAndWait(dict, context, entry, extract.Names, extract.RawString))
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    return;
-                }
-            }
-
-            #endregion Extract Check
-
             #region Filter Check
 
             object[] filterBys = entry.Action.GetCustomAttributes(typeof(FilterByAttribute), false);
@@ -150,6 +120,34 @@ namespace Hyperai.Units
             }
 
             #endregion Filter Check
+
+            #region Extract Check
+
+            ExtractAttribute extract = entry.Action.GetCustomAttribute<ExtractAttribute>();
+            Dictionary<string, (MessageChain, int, bool)> dict = new Dictionary<string, (MessageChain, int, bool)>();
+
+            if (extract != null)
+            {
+                Match match = extract.Pattern.Match(_formatter.Format(context.Message.AsReadable()));
+                if (match.Success)
+                {
+                    string[] names = extract.Names.ToArray();
+                    for (int i = 1; i < match.Groups.Count; i++)
+                    {
+                        dict.Add(names[i - 1], (_parser.Parse(match.Groups[i].Value), match.Groups[i].Index, false));
+                    }
+                    if (CheckNamesAndWait(dict, context, entry, extract.Names, extract.RawString))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            #endregion Extract Check
 
             InvokeOne(entry, context, dict);
         }
@@ -228,7 +226,7 @@ namespace Hyperai.Units
         private void WaitForInput(ActionEntry entry, MessageContext context, Dictionary<string, (MessageChain, int, bool)> dict, string waitingName, IList<string> orderedNames, string raw)
         {
             const int timeout = 3;
-            var chain = new MessageChain(new MessageComponent[] { new Plain($"⚠请为以下参数提供值({raw})⚠: \n⚪{waitingName}") });
+            MessageChain chain = new MessageChain(new MessageComponent[] { new Plain($"⚠请为以下参数提供值({raw})⚠: \n⚪{waitingName}") });
             context.ReplyAsync(chain).Wait();
             WaitOne(new Channel() { UserId = context.User.Identity, GroupId = context.Group?.Identity }, Delegate, TimeSpan.FromMinutes(timeout));
             void Delegate(MessageContext newContext)
