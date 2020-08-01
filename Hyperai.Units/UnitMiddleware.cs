@@ -30,7 +30,10 @@ namespace Hyperai.Units
             {
                 // 该消息无法被序列化
                 // 没必要继续下去
-                if (messageArgs.Message.Any(x => x.GetType().GetCustomAttribute<SerializableAttribute>() == null)) return true;
+                if (messageArgs.Message.Any(x => x.GetType().GetCustomAttribute<SerializableAttribute>() == null))
+                {
+                    return true;
+                }
             }
             else
             {
@@ -50,13 +53,13 @@ namespace Hyperai.Units
                 case GroupMessageEventArgs gm:
                     context.Group = gm.Group;
                     context.User = gm.User;
-                    context.Message = gm.Message.AsReadable();
+                    context.Message = gm.Message;
                     context.Type = MessageEventType.Group;
                     break;
 
                 case FriendMessageEventArgs fm:
                     context.User = fm.User;
-                    context.Message = fm.Message.AsReadable();
+                    context.Message = fm.Message;
                     context.Type = MessageEventType.Friend;
                     break;
 
