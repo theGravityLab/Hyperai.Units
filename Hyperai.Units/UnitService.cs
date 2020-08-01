@@ -245,7 +245,7 @@ namespace Hyperai.Units
                     {
                        if (dict[name].Item3)
                        {
-                           builder.Append(text.Substring(start, dict[name].Item2 - start));
+                           builder.Append(text[start..dict[name].Item2]);
                            builder.Append(_formatter.Format(dict[name].Item1));
                            start = dict[name].Item2 + 2;
                        }
