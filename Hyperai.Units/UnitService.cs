@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Hyperai.Units
@@ -95,32 +96,6 @@ namespace Hyperai.Units
                 return;
             }
 
-            #region Filter Check
-
-            object[] filterBys = entry.Action.GetCustomAttributes(typeof(FilterByAttribute), false);
-            string failureMessage = null;
-            bool pass = filterBys.All(x =>
-            {
-                FilterByAttribute filter = (FilterByAttribute)x;
-                if (!filter.Filter.Check(context))
-                {
-                    failureMessage = filter.FailureMessage;
-                    return false;
-                }
-                return true;
-            });
-            if (!pass)
-            {
-                if (failureMessage != null)
-                {
-                    MessageChain chain = new MessageChain(new MessageComponent[] { new Plain(entry.Action.Name + ": " + failureMessage) });
-                    context.ReplyAsync(chain).Wait();
-                }
-                return;
-            }
-
-            #endregion Filter Check
-
             #region Extract Check
 
             ExtractAttribute extract = entry.Action.GetCustomAttribute<ExtractAttribute>();
@@ -149,9 +124,38 @@ namespace Hyperai.Units
 
             #endregion Extract Check
 
-            InvokeOne(entry, context, dict);
+            CheckAndInvoke(entry, context, dict);
         }
 
+        private void CheckAndInvoke(ActionEntry entry, MessageContext context, Dictionary<string, (MessageChain, int, bool)> names)
+        {
+            #region Filter Check
+
+            object[] filterBys = entry.Action.GetCustomAttributes(typeof(FilterByAttribute), false);
+            string failureMessage = null;
+            bool pass = filterBys.All(x =>
+            {
+                FilterByAttribute filter = (FilterByAttribute)x;
+                if (!filter.Filter.Check(context))
+                {
+                    failureMessage = filter.FailureMessage;
+                    return false;
+                }
+                return true;
+            });
+            if (!pass)
+            {
+                if (failureMessage != null)
+                {
+                    MessageChain chain = new MessageChain(new MessageComponent[] { new Plain(entry.Action.Name + ": " + failureMessage) });
+                    context.ReplyAsync(chain).Wait();
+                }
+                return;
+            }
+
+            #endregion Filter Check
+            InvokeOne(entry, context, names);
+        }
         private void InvokeOne(ActionEntry entry, MessageContext context, Dictionary<string, (MessageChain, int, bool)> names)
         {
             ParameterInfo[] paras = entry.Action.GetParameters();
@@ -234,23 +238,24 @@ namespace Hyperai.Units
                 dict[waitingName] = (newContext.Message, dict[waitingName].Item2, true);
                 if (!CheckNamesAndWait(dict, context, entry, orderedNames, raw))
                 {
-                    //string text = _formatter.Format(context.Message);
-                    //StringBuilder builder = new StringBuilder();
-                    //int start = 0;
-                    //foreach (string name in orderedNames)
-                    //{
-                    //    if (dict[name].Item3)
-                    //    {
-                    //        builder.Append(text.Substring(start, dict[name].Item2 - start));
-                    //        builder.Append(_formatter.Format(dict[name].Item1));
-                    //        start = dict[name].Item2 + 2;
-                    //    }
-                    //}
-                    //if (start < text.Length) builder.Append(text.Substring(start));
+                    string text = _formatter.Format(context.Message);
+                    StringBuilder builder = new StringBuilder();
+                    int start = 0;
+                    foreach (string name in orderedNames)
+                    {
+                       if (dict[name].Item3)
+                       {
+                           builder.Append(text[start..dict[name].Item2]);
+                           builder.Append(_formatter.Format(dict[name].Item1));
+                           start = dict[name].Item2 + 2;
+                       }
+                    }
+                    if (start < text.Length) builder.Append(text.Substring(start));
 
                     // 就不应该应用到原来的 Context.Message里
-                    // context.Message = _parser.Parse(builder.ToString());
-                    InvokeOne(entry, context, dict);
+                    // Filter 检查 Context.Message， 而此时 Extract 都处理完了， 回填也是应该的。
+                    context.Message = _parser.Parse(builder.ToString());
+                    CheckAndInvoke(entry, context, dict);
                 }
             }
         }
