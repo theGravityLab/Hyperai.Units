@@ -111,10 +111,6 @@ namespace Hyperai.Units
                     {
                         dict.Add(names[i - 1], (_parser.Parse(match.Groups[i].Value), match.Groups[i].Index, false));
                     }
-                    if (CheckNamesAndWait(dict, context, entry, extract.Names, extract.RawString))
-                    {
-                        return;
-                    }
                 }
                 else
                 {
@@ -124,11 +120,6 @@ namespace Hyperai.Units
 
             #endregion Extract Check
 
-            CheckAndInvoke(entry, context, dict);
-        }
-
-        private void CheckAndInvoke(ActionEntry entry, MessageContext context, Dictionary<string, (MessageChain, int, bool)> names)
-        {
             #region Filter Check
 
             object[] filterBys = entry.Action.GetCustomAttributes(typeof(FilterByAttribute), false);
@@ -154,7 +145,7 @@ namespace Hyperai.Units
             }
 
             #endregion Filter Check
-            InvokeOne(entry, context, names);
+            InvokeOne(entry, context, dict);
         }
         private void InvokeOne(ActionEntry entry, MessageContext context, Dictionary<string, (MessageChain, int, bool)> names)
         {
@@ -225,52 +216,6 @@ namespace Hyperai.Units
                 invaders.Add(channel, new Queue<QueueEntry>());
             }
             invaders[channel].Enqueue(new QueueEntry(action, timeout));
-        }
-
-        private void WaitForInput(ActionEntry entry, MessageContext context, Dictionary<string, (MessageChain, int, bool)> dict, string waitingName, IList<string> orderedNames, string raw)
-        {
-            const int timeout = 3;
-            MessageChain chain = new MessageChain(new MessageComponent[] { new Plain($"⚠请为以下参数提供值({raw})⚠: \n⚪{waitingName}") });
-            context.ReplyAsync(chain).Wait();
-            WaitOne(new Channel() { UserId = context.User.Identity, GroupId = context.Group?.Identity }, Delegate, TimeSpan.FromMinutes(timeout));
-            void Delegate(MessageContext newContext)
-            {
-                dict[waitingName] = (newContext.Message, dict[waitingName].Item2, true);
-                if (!CheckNamesAndWait(dict, context, entry, orderedNames, raw))
-                {
-                    string text = _formatter.Format(context.Message);
-                    StringBuilder builder = new StringBuilder();
-                    int start = 0;
-                    foreach (string name in orderedNames)
-                    {
-                       if (dict[name].Item3)
-                       {
-                           builder.Append(text[start..dict[name].Item2]);
-                           builder.Append(_formatter.Format(dict[name].Item1));
-                           start = dict[name].Item2 + 2;
-                       }
-                    }
-                    if (start < text.Length) builder.Append(text.Substring(start));
-
-                    // 就不应该应用到原来的 Context.Message里
-                    // Filter 检查 Context.Message， 而此时 Extract 都处理完了， 回填也是应该的。
-                    context.Message = _parser.Parse(builder.ToString());
-                    CheckAndInvoke(entry, context, dict);
-                }
-            }
-        }
-
-        private bool CheckNamesAndWait(Dictionary<string, (MessageChain, int, bool)> names, MessageContext context, ActionEntry entry, IList<string> orderedNames, string raw)
-        {
-            foreach (string key in names.Keys)
-            {
-                if (names[key].Item1.ToString() == "{}")
-                {
-                    WaitForInput(entry, context, names, key, orderedNames, raw);
-                    return true;
-                }
-            }
-            return false;
         }
 
         public void SearchForUnits()
