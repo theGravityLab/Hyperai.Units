@@ -99,7 +99,7 @@ namespace Hyperai.Units
             #region Extract Check
 
             ExtractAttribute extract = entry.Action.GetCustomAttribute<ExtractAttribute>();
-            Dictionary<string, (MessageChain, int, bool)> dict = new Dictionary<string, (MessageChain, int, bool)>();
+            Dictionary<string, MessageChain> dict = new Dictionary<string, MessageChain>();
 
             if (extract != null)
             {
@@ -109,11 +109,7 @@ namespace Hyperai.Units
                     string[] names = extract.Names.ToArray();
                     for (int i = 1; i < match.Groups.Count; i++)
                     {
-                        dict.Add(names[i - 1], (_parser.Parse(match.Groups[i].Value), match.Groups[i].Index, false));
-                    }
-                    if (CheckNamesAndWait(dict, context, entry, extract.Names, extract.RawString))
-                    {
-                        return;
+                        dict.Add(names[i - 1], _parser.Parse(match.Groups[i].Value));
                     }
                 }
                 else
@@ -124,11 +120,6 @@ namespace Hyperai.Units
 
             #endregion Extract Check
 
-            CheckAndInvoke(entry, context, dict);
-        }
-
-        private void CheckAndInvoke(ActionEntry entry, MessageContext context, Dictionary<string, (MessageChain, int, bool)> names)
-        {
             #region Filter Check
 
             object[] filterBys = entry.Action.GetCustomAttributes(typeof(FilterByAttribute), false);
@@ -154,9 +145,9 @@ namespace Hyperai.Units
             }
 
             #endregion Filter Check
-            InvokeOne(entry, context, names);
+            InvokeOne(entry, context, dict);
         }
-        private void InvokeOne(ActionEntry entry, MessageContext context, Dictionary<string, (MessageChain, int, bool)> names)
+        private void InvokeOne(ActionEntry entry, MessageContext context, Dictionary<string, MessageChain> names)
         {
             ParameterInfo[] paras = entry.Action.GetParameters();
             object[] paList = new object[paras.Length];
@@ -169,13 +160,13 @@ namespace Hyperai.Units
                         // pattern
                         paList[para.Position] = para.ParameterType switch
                         {
-                            _ when para.ParameterType == typeof(string) => _formatter.Format(names[para.Name].Item1),
-                            _ when para.ParameterType == typeof(MessageChain) => names[para.Name].Item1,
-                            _ when typeof(MessageComponent).IsAssignableFrom(para.ParameterType) => names[para.Name].Item1.FirstOrDefault(x => x.GetType() == para.ParameterType),
+                            _ when para.ParameterType == typeof(string) => _formatter.Format(names[para.Name]),
+                            _ when para.ParameterType == typeof(MessageChain) => names[para.Name],
+                            _ when typeof(MessageComponent).IsAssignableFrom(para.ParameterType) => names[para.Name].FirstOrDefault(x => x.GetType() == para.ParameterType),
                             // _ when para.ParameterType == typeof(Member) && names[para.Name].Any(x
                             // => x is At) => GetMember(((At)names[para.Name].First(x => x is At)).TargetId),
                             // unit 不应该即时计算
-                            _ when para.ParameterType != typeof(string) && para.ParameterType.IsValueType => typeof(Convert).GetMethod("To" + para.ParameterType.Name, new Type[] { typeof(string) }).Invoke(null, new object[] { _formatter.Format(names[para.Name].Item1) }),
+                            _ when para.ParameterType != typeof(string) && para.ParameterType.IsValueType => typeof(Convert).GetMethod("To" + para.ParameterType.Name, new Type[] { typeof(string) }).Invoke(null, new object[] { _formatter.Format(names[para.Name]) }),
                             _ => throw new NotImplementedException("Pattern type not supported: " + para.ParameterType.FullName),
                         };
                     }
@@ -225,52 +216,6 @@ namespace Hyperai.Units
                 invaders.Add(channel, new Queue<QueueEntry>());
             }
             invaders[channel].Enqueue(new QueueEntry(action, timeout));
-        }
-
-        private void WaitForInput(ActionEntry entry, MessageContext context, Dictionary<string, (MessageChain, int, bool)> dict, string waitingName, IList<string> orderedNames, string raw)
-        {
-            const int timeout = 3;
-            MessageChain chain = new MessageChain(new MessageComponent[] { new Plain($"⚠请为以下参数提供值({raw})⚠: \n⚪{waitingName}") });
-            context.ReplyAsync(chain).Wait();
-            WaitOne(new Channel() { UserId = context.User.Identity, GroupId = context.Group?.Identity }, Delegate, TimeSpan.FromMinutes(timeout));
-            void Delegate(MessageContext newContext)
-            {
-                dict[waitingName] = (newContext.Message, dict[waitingName].Item2, true);
-                if (!CheckNamesAndWait(dict, context, entry, orderedNames, raw))
-                {
-                    string text = _formatter.Format(context.Message);
-                    StringBuilder builder = new StringBuilder();
-                    int start = 0;
-                    foreach (string name in orderedNames)
-                    {
-                       if (dict[name].Item3)
-                       {
-                           builder.Append(text[start..dict[name].Item2]);
-                           builder.Append(_formatter.Format(dict[name].Item1));
-                           start = dict[name].Item2 + 2;
-                       }
-                    }
-                    if (start < text.Length) builder.Append(text.Substring(start));
-
-                    // 就不应该应用到原来的 Context.Message里
-                    // Filter 检查 Context.Message， 而此时 Extract 都处理完了， 回填也是应该的。
-                    context.Message = _parser.Parse(builder.ToString());
-                    CheckAndInvoke(entry, context, dict);
-                }
-            }
-        }
-
-        private bool CheckNamesAndWait(Dictionary<string, (MessageChain, int, bool)> names, MessageContext context, ActionEntry entry, IList<string> orderedNames, string raw)
-        {
-            foreach (string key in names.Keys)
-            {
-                if (names[key].Item1.ToString() == "{}")
-                {
-                    WaitForInput(entry, context, names, key, orderedNames, raw);
-                    return true;
-                }
-            }
-            return false;
         }
 
         public void SearchForUnits()
