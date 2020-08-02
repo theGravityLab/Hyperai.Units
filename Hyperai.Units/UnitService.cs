@@ -99,7 +99,7 @@ namespace Hyperai.Units
             #region Extract Check
 
             ExtractAttribute extract = entry.Action.GetCustomAttribute<ExtractAttribute>();
-            Dictionary<string, (MessageChain, int, bool)> dict = new Dictionary<string, (MessageChain, int, bool)>();
+            Dictionary<string, MessageChain> dict = new Dictionary<string, MessageChain>();
 
             if (extract != null)
             {
@@ -109,7 +109,7 @@ namespace Hyperai.Units
                     string[] names = extract.Names.ToArray();
                     for (int i = 1; i < match.Groups.Count; i++)
                     {
-                        dict.Add(names[i - 1], (_parser.Parse(match.Groups[i].Value), match.Groups[i].Index, false));
+                        dict.Add(names[i - 1], _parser.Parse(match.Groups[i].Value));
                     }
                 }
                 else
@@ -147,7 +147,7 @@ namespace Hyperai.Units
             #endregion Filter Check
             InvokeOne(entry, context, dict);
         }
-        private void InvokeOne(ActionEntry entry, MessageContext context, Dictionary<string, (MessageChain, int, bool)> names)
+        private void InvokeOne(ActionEntry entry, MessageContext context, Dictionary<string, MessageChain> names)
         {
             ParameterInfo[] paras = entry.Action.GetParameters();
             object[] paList = new object[paras.Length];
@@ -160,13 +160,13 @@ namespace Hyperai.Units
                         // pattern
                         paList[para.Position] = para.ParameterType switch
                         {
-                            _ when para.ParameterType == typeof(string) => _formatter.Format(names[para.Name].Item1),
-                            _ when para.ParameterType == typeof(MessageChain) => names[para.Name].Item1,
-                            _ when typeof(MessageComponent).IsAssignableFrom(para.ParameterType) => names[para.Name].Item1.FirstOrDefault(x => x.GetType() == para.ParameterType),
+                            _ when para.ParameterType == typeof(string) => _formatter.Format(names[para.Name]),
+                            _ when para.ParameterType == typeof(MessageChain) => names[para.Name],
+                            _ when typeof(MessageComponent).IsAssignableFrom(para.ParameterType) => names[para.Name].FirstOrDefault(x => x.GetType() == para.ParameterType),
                             // _ when para.ParameterType == typeof(Member) && names[para.Name].Any(x
                             // => x is At) => GetMember(((At)names[para.Name].First(x => x is At)).TargetId),
                             // unit 不应该即时计算
-                            _ when para.ParameterType != typeof(string) && para.ParameterType.IsValueType => typeof(Convert).GetMethod("To" + para.ParameterType.Name, new Type[] { typeof(string) }).Invoke(null, new object[] { _formatter.Format(names[para.Name].Item1) }),
+                            _ when para.ParameterType != typeof(string) && para.ParameterType.IsValueType => typeof(Convert).GetMethod("To" + para.ParameterType.Name, new Type[] { typeof(string) }).Invoke(null, new object[] { _formatter.Format(names[para.Name]) }),
                             _ => throw new NotImplementedException("Pattern type not supported: " + para.ParameterType.FullName),
                         };
                     }
