@@ -71,7 +71,7 @@ namespace Hyperai.Units
             stopwatch.Restart();
             _service.Handle(context);
             stopwatch.Stop();
-            _logger.LogDebug("Handling for Unit Actions took {} milliseconds(routing = {}): {}", stopwatch.ElapsedMilliseconds + prepare, stopwatch.ElapsedMilliseconds, context.Message);
+            _logger.LogDebug("Handling for Unit Actions took {} milliseconds(preparing = {}): {}", stopwatch.ElapsedMilliseconds + prepare, prepare, context.Message);
             stopwatch.Reset();
             return true;
         }

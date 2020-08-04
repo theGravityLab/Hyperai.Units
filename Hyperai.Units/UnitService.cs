@@ -12,6 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Hyperai.Units
 {
@@ -145,8 +146,10 @@ namespace Hyperai.Units
             }
 
             #endregion Filter Check
+
             InvokeOne(entry, context, dict);
         }
+
         private void InvokeOne(ActionEntry entry, MessageContext context, Dictionary<string, MessageChain> names)
         {
             ParameterInfo[] paras = entry.Action.GetParameters();
@@ -198,7 +201,7 @@ namespace Hyperai.Units
             }
             object unit = ActivatorUtilities.CreateInstance(_provider, entry.Unit);
             _logger.LogInformation($"Action hit: {entry}");
-            entry.Action.Invoke(unit, paList.ToArray());
+            Task.Run(() => entry.Action.Invoke(unit, paList.ToArray()));
             if (entry.State is int count)
             {
                 entry.State = count - 1;
