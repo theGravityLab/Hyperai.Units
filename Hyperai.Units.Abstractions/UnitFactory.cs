@@ -7,6 +7,11 @@ namespace Hyperai.Units
     {
         public static UnitFactory Instance { get; set; }
 
+        static UnitFactory()
+        {
+            new UnitFactory();
+        }
+
         public UnitFactory()
         {
             Instance = this;
