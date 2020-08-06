@@ -10,10 +10,17 @@ namespace Hyperai.Units.Attributes
     {
         public Regex Pattern { get; private set; }
         public string RawString { get; private set; }
+        public bool TrimSpaces { get; private set; }
         public IList<string> Names { get; private set; }
 
-        public ExtractAttribute(string pattern)
+        /// <summary>
+        /// 创建一个模板用于匹配消息
+        /// </summary>
+        /// <param name="pattern">模板</param>
+        /// <param name="trimSpaces">是否裁剪前后空格和合并二个空格为一个</param>
+        public ExtractAttribute(string pattern, bool trimSpaces = false)
         {
+            TrimSpaces = trimSpaces;
             RawString = pattern;
             MatchCollection parameters = Regex.Matches(pattern, @"\{(?<name>[a-z0-9]+)\}");
             Names = parameters.Select(x => x.Groups["name"].Value).ToList();
