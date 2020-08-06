@@ -7,6 +7,7 @@
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FtheGravityLab%2FHyperai.Units.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FtheGravityLab%2FHyperai.Units?ref=badge_shield)
 
 <!-- PROJECT LOGO -->
 
@@ -104,3 +105,6 @@ public class Asshole
 [forks-url]: https://github.com/theGravityLab/Hyperai.Units/network/members
 [stars-shield]: https://img.shields.io/github/stars/theGravityLab/Hyperai.Units?style=for-the-badge
 [stars-url]: https://github.com/theGravityLab/Hyperai.Units/stargazers
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FtheGravityLab%2FHyperai.Units.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FtheGravityLab%2FHyperai.Units?ref=badge_large)
