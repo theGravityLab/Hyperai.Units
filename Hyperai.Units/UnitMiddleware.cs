@@ -1,5 +1,4 @@
 ﻿using Hyperai.Events;
-using Hyperai.Messages;
 using Hyperai.Middlewares;
 using Hyperai.Relations;
 using Hyperai.Services;

@@ -4,15 +4,12 @@ using Hyperai.Messages.ConcreteModels;
 using Hyperai.Relations;
 using Hyperai.Services;
 using Hyperai.Units.Attributes;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Hyperai.Units
 {
@@ -104,7 +101,17 @@ namespace Hyperai.Units
 
             if (extract != null)
             {
-                Match match = extract.Pattern.Match(_formatter.Format(context.Message.AsReadable()));
+                string text = _formatter.Format(context.Message.AsReadable());
+                if (extract.TrimSpaces)
+                {
+                    // TODO: 使用空间复杂度O(1)的操作替代
+                    text = text.Trim();
+                    while (text.Contains("  "))
+                    {
+                        text = text.Replace("  ", " ");
+                    }
+                }
+                Match match = extract.Pattern.Match(text);
                 if (match.Success)
                 {
                     string[] names = extract.Names.ToArray();
@@ -199,9 +206,9 @@ namespace Hyperai.Units
                     return;
                 }
             }
-            object unit = ActivatorUtilities.CreateInstance(_provider, entry.Unit);
+            UnitBase unit = UnitFactory.Instance.CreateUnit(entry.Unit, context, _provider);
             _logger.LogInformation($"Action hit: {entry}");
-            Task.Run(() => entry.Action.Invoke(unit, paList.ToArray()));
+            entry.Action.Invoke(unit, paList.ToArray()); // 异步调用, 但是测出来怎么不是?
             if (entry.State is int count)
             {
                 entry.State = count - 1;
