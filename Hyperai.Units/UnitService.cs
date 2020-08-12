@@ -231,7 +231,7 @@ namespace Hyperai.Units
         public void SearchForUnits()
         {
             List<ActionEntry> ent = new List<ActionEntry>();
-            foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies().Where(p => !p.IsDynamic))
             {
                 IEnumerable<Type> types = ass.GetExportedTypes().Where(x => !x.IsAbstract && x.IsSubclassOf(typeof(UnitBase)));
                 foreach (Type type in types)
