@@ -3,9 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>Hyperai.Units</RootNamespace>
-    <AssemblyVersion>2020.8.6.1</AssemblyVersion>
     <PackageId>Hyperai.Units.Abstractions</PackageId>
-    <Version>2020.8.6.1</Version>
+    <Version>2020.8.17.1</Version>
     <Authors>GravityLab</Authors>
     <Company>Unicore</Company>
     <PackageDescription>Hyperai.Units.Abstractions</PackageDescription>

@@ -6,6 +6,7 @@ using Hyperai.Services;
 using Hyperai.Units.Attributes;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -29,7 +30,7 @@ namespace Hyperai.Units
             }
         }
 
-        private readonly Dictionary<Channel, Queue<QueueEntry>> invaders = new Dictionary<Channel, Queue<QueueEntry>>();
+        private readonly Dictionary<Channel, ConcurrentQueue<QueueEntry>> invaders = new Dictionary<Channel, ConcurrentQueue<QueueEntry>>();
         private IEnumerable<ActionEntry> entries = null;
 
         private readonly IServiceProvider _provider;
@@ -52,9 +53,8 @@ namespace Hyperai.Units
             {
                 if (channel.Match(context.User.Identity, context.Type == MessageEventType.Group ? (long?)context.Group.Identity : null))
                 {
-                    if (invaders[channel].Count > 0)
+                    if (invaders[channel].TryDequeue(out QueueEntry action))
                     {
-                        QueueEntry action = invaders[channel].Dequeue();
                         if (DateTime.Now < action.CreatedAt + action.Timeout)
                         {
                             action.Action(context);
@@ -70,6 +70,7 @@ namespace Hyperai.Units
                     {
                         invaders.Remove(channel);
                     }
+                    break;
                 }
             }
             if (!flag)
@@ -223,7 +224,7 @@ namespace Hyperai.Units
         {
             if (!invaders.ContainsKey(channel))
             {
-                invaders.Add(channel, new Queue<QueueEntry>());
+                invaders.Add(channel, new ConcurrentQueue<QueueEntry>());
             }
             invaders[channel].Enqueue(new QueueEntry(action, timeout));
         }

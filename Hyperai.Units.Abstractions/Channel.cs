@@ -24,5 +24,22 @@
         {
             return new Channel() { UserId = user, GroupId = null };
         }
+
+        public override bool Equals(object obj)
+        {
+            if (Equals(obj, null)) return false;
+            if(obj is Channel channel)
+            {
+                return channel.UserId == UserId && channel.GroupId == GroupId;
+            }else
+            {
+                return false;
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return $"{(UserId != null ? UserId.ToString() : "null")}@{(GroupId != null ? GroupId.ToString() : "null")}".GetHashCode();
+        }
     }
 }
