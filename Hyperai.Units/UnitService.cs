@@ -204,18 +204,33 @@ namespace Hyperai.Units
                 if (entry.State is int cnt)
                 {
                     entry.State = cnt + 1;
-                    return;
                 }
+                _logger.LogError("Failed to configure context of Unit Action.");
+                return;
             }
             UnitBase unit = UnitFactory.Instance.CreateUnit(entry.Unit, context, _provider);
             _logger.LogInformation($"Action hit: {entry}");
-            entry.Action.Invoke(unit, paList.ToArray()); // 异步调用, 但是测出来怎么不是?
-            if (entry.State is int count)
+            try
             {
-                entry.State = count - 1;
-                if (count < 0)
+                entry.Action.Invoke(unit, paList.ToArray());
+
+                if (entry.State is int count)
                 {
-                    entry.State = 0;
+                    entry.State = count - 1;
+                    if (count < 0)
+                    {
+                        entry.State = 0;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error occurred while executing Unit Action.");
+
+
+                if (entry.State is int count)
+                {
+                    entry.State = count + 1;
                 }
             }
         }
