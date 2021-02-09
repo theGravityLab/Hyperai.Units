@@ -105,13 +105,27 @@ namespace Hyperai.Units
                 string text = _formatter.Format(context.Message.AsReadable());
                 if (extract.TrimSpaces)
                 {
-                    // TODO: 使用空间复杂度O(1)的操作替代
-                    text = text.Trim();
-                    while (text.Contains("  "))
+                    char[] rawChars = text.ToArray();
+                    char[] output = new char[rawChars.Length];
+                    int j = 0;
+                    for (int i = 0; i < rawChars.Length; i++)
                     {
-                        text = text.Replace("  ", " ");
+                        if ((j == 0 && rawChars[i] != ' ') || (j > 0 && (output[j - 1] != ' ' || rawChars[i] != ' ')))
+                        {
+                            output[j] = rawChars[i];
+                            j++;
+                        }
                     }
+
+                    while (j > 0 && output[j - 1] == ' ')
+                    {
+                        j--;
+                    }
+
+                    text = new string(output[0..j]);
                 }
+                _logger.LogDebug(text);
+
                 Match match = extract.Pattern.Match(text);
                 if (match.Success)
                 {
