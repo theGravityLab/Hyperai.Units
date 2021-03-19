@@ -124,7 +124,6 @@ namespace Hyperai.Units
 
                     text = new string(output[0..j]);
                 }
-                _logger.LogDebug(text);
 
                 Match match = extract.Pattern.Match(text);
                 if (match.Success)
