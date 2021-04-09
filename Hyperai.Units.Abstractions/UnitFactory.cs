@@ -1,15 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hyperai.Units
 {
     public class UnitFactory
     {
-        public static UnitFactory Instance { get; set; }
-
         static UnitFactory()
         {
-            new UnitFactory();
+            var _ = new UnitFactory();
         }
 
         public UnitFactory()
@@ -17,9 +15,11 @@ namespace Hyperai.Units
             Instance = this;
         }
 
+        public static UnitFactory Instance { get; set; }
+
         public UnitBase CreateUnit(Type type, MessageContext context, IServiceProvider provider)
         {
-            UnitBase unit = (UnitBase)ActivatorUtilities.CreateInstance(provider, type);
+            var unit = (UnitBase) ActivatorUtilities.CreateInstance(provider, type);
             unit.Context = context;
             return unit;
         }

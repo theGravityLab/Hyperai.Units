@@ -5,7 +5,7 @@ namespace Hyperai.Units
     public static class Extensions
     {
         /// <summary>
-        /// add but no search
+        ///     add but no search
         /// </summary>
         /// <param name="services">service collection</param>
         /// <returns>original service collection</returns>

@@ -1,8 +1,8 @@
-﻿using Hyperai.Events;
+﻿using System;
+using Hyperai.Events;
 using Hyperai.Messages;
 using Hyperai.Relations;
 using Hyperai.Services;
-using System;
 
 namespace Hyperai.Units
 {

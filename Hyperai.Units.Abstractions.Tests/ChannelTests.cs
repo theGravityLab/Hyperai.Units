@@ -1,7 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Hyperai.Units.Abstractions.Tests
 {
@@ -12,7 +9,7 @@ namespace Hyperai.Units.Abstractions.Tests
         public void Equals_Null_Failed()
         {
             // A
-            Channel channel = Channel.Create(1, 2);
+            var channel = Channel.Create(1, 2);
             // A & A
             Assert.IsFalse(channel.Equals(null));
         }
@@ -21,8 +18,8 @@ namespace Hyperai.Units.Abstractions.Tests
         public void Equals_Same_Success()
         {
             // A
-            Channel channel = Channel.Create(1, 2);
-            Channel other = Channel.Create(1, 2);
+            var channel = Channel.Create(1, 2);
+            var other = Channel.Create(1, 2);
             // A & A
             Assert.AreEqual(other, channel);
         }
@@ -31,8 +28,8 @@ namespace Hyperai.Units.Abstractions.Tests
         public void Equals_Different_Succuss()
         {
             // A
-            Channel channel = Channel.Create(1, 1);
-            Channel other = Channel.Create(1, null);
+            var channel = Channel.Create(1, 1);
+            var other = Channel.Create(1);
             // A & A
             Assert.AreNotEqual(other, channel);
         }

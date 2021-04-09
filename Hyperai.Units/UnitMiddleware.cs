@@ -1,21 +1,21 @@
-﻿using Hyperai.Events;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using Hyperai.Events;
 using Hyperai.Middlewares;
 using Hyperai.Relations;
 using Hyperai.Services;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 
 namespace Hyperai.Units
 {
     public class UnitMiddleware : IMiddleware
     {
-        private readonly IUnitService _service;
         private readonly ILogger _logger;
+        private readonly IUnitService _service;
 
-        private readonly Stopwatch stopwatch = new Stopwatch();
+        private readonly Stopwatch stopwatch = new();
 
         public UnitMiddleware(IUnitService service, ILogger<UnitMiddleware> logger)
         {
@@ -30,17 +30,16 @@ namespace Hyperai.Units
                 // 该消息无法被序列化
                 // 没必要继续下去
                 if (messageArgs.Message.Any(x => x.GetType().GetCustomAttribute<SerializableAttribute>() == null))
-                {
                     return true;
-                }
             }
             else
             {
                 // 连消息事件都不是, 就更没必要了
                 return true;
             }
+
             stopwatch.Start();
-            MessageContext context = new MessageContext()
+            var context = new MessageContext
             {
                 SentAt = args.Time,
                 Client = sender,
@@ -65,12 +64,14 @@ namespace Hyperai.Units
                 default:
                     return true;
             }
+
             stopwatch.Stop();
-            long prepare = stopwatch.ElapsedMilliseconds;
+            var prepare = stopwatch.ElapsedMilliseconds;
             stopwatch.Restart();
             _service.Handle(context);
             stopwatch.Stop();
-            _logger.LogDebug("Handling for Unit Actions took {} milliseconds(preparing = {}): {}", stopwatch.ElapsedMilliseconds + prepare, prepare, context.Message);
+            _logger.LogDebug("Handling for Unit Actions took {} milliseconds(preparing = {}): {}",
+                stopwatch.ElapsedMilliseconds + prepare, prepare, context.Message);
             stopwatch.Reset();
             return true;
         }

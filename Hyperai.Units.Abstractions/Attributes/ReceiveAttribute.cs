@@ -1,13 +1,11 @@
-﻿using Hyperai.Events;
-using System;
+﻿using System;
+using Hyperai.Events;
 
 namespace Hyperai.Units.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class ReceiveAttribute : Attribute
     {
-        public MessageEventType Type { get; set; }
-
         public ReceiveAttribute(MessageEventType type)
         {
             Type = type;
@@ -16,5 +14,7 @@ namespace Hyperai.Units.Attributes
         public ReceiveAttribute() : this(MessageEventType.Friend)
         {
         }
+
+        public MessageEventType Type { get; set; }
     }
 }

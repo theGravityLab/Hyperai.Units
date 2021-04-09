@@ -1,8 +1,8 @@
-﻿using Hyperai.Events;
+﻿using System.Threading.Tasks;
+using Hyperai.Events;
 using Hyperai.Messages;
 using Hyperai.Relations;
 using Hyperai.Services;
-using System.Threading.Tasks;
 
 namespace Hyperai.Units
 {
@@ -13,14 +13,11 @@ namespace Hyperai.Units
             switch (context.Type)
             {
                 case MessageEventType.Friend:
-                    await context.Client.SendFriendMessageAsync((Friend)context.User, message);
+                    await context.Client.SendFriendMessageAsync((Friend) context.User, message);
                     break;
 
                 case MessageEventType.Group:
                     await context.Client.SendGroupMessageAsync(context.Group, message);
-                    break;
-
-                default:
                     break;
             }
         }

@@ -1,14 +1,14 @@
-﻿using Hyperai.Events;
-using System;
+﻿using System;
 using System.Reflection;
+using Hyperai.Events;
 
 namespace Hyperai.Units
 {
     public struct ActionEntry
     {
-        public MessageEventType Type { get; private set; }
-        public MethodInfo Action { get; private set; }
-        public Type Unit { get; private set; }
+        public MessageEventType Type { get; }
+        public MethodInfo Action { get; }
+        public Type Unit { get; }
         public object State { get; set; }
 
         public ActionEntry(MessageEventType type, MethodInfo action, Type unit, object state)
