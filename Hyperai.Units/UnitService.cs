@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Hyperai.Events;
 using Hyperai.Messages;
 using Hyperai.Messages.ConcreteModels;
@@ -108,7 +110,7 @@ namespace Hyperai.Units
             if (entry.State is int errorCount and >= 3)
             {
                 if (errorCount == 3)
-                    _logger.LogWarning("An Action has met its error limit and has been disabled: " + entry);
+                    _logger.LogWarning("An Action has met its error limit and has been disabled: {Entry}", entry);
 
                 return;
             }
@@ -225,32 +227,61 @@ namespace Hyperai.Units
                                                                    para.ParameterType.FullName)
                         };
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 if (entry.State is int cnt) entry.State = cnt + 1;
-                _logger.LogError("Failed to configure context of Unit Action.");
+                _logger.LogError(e, "Failed to configure context of Unit Action");
                 return;
             }
 
             var unit = UnitFactory.Instance.CreateUnit(entry.Unit, context, _provider);
-            _logger.LogInformation($"Action hit: {entry}");
-            try
-            {
-                entry.Action.Invoke(unit, paList.ToArray());
+            _logger.LogInformation("Action hit: {Entry}", entry);
 
-                if (entry.State is int count)
+            #region IF_ASYNC_ACTION
+
+            var attr = entry.Action.GetCustomAttribute<AsyncStateMachineAttribute>();
+            if (attr != null)
+            {
+                var task = entry.Action.Invoke(unit, paList.ToArray()) as Task;
+                // 有些方法签名为 public async void _(...)，得不到task，就无法捕获异常
+                task?.ContinueWith(t =>
                 {
-                    entry.State = count - 1;
-                    if (count < 0) entry.State = 0;
+                    if (t.Exception != null)
+                    {
+                        _logger.LogError(t.Exception, "Exception occurred while executing unit action asynchronously");
+                        if (entry.State is int count) entry.State = count + 1;
+                    }
+                    else
+                    {
+                        if (entry.State is int count)
+                        {
+                            entry.State = count - 1;
+                            if (count < 0) entry.State = 0;
+                        }
+                    }
+                });
+
+            }
+            else
+            {
+                try
+                {
+                    entry.Action.Invoke(unit, paList.ToArray());
+
+                    if (entry.State is int count)
+                    {
+                        entry.State = count - 1;
+                        if (count < 0) entry.State = 0;
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Exception caught while executing unit action synchronously");
+                    if (entry.State is int count) entry.State = count + 1;
                 }
             }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error occurred while executing Unit Action.");
 
-
-                if (entry.State is int count) entry.State = count + 1;
-            }
+            #endregion
         }
 
         private readonly struct QueueEntry
