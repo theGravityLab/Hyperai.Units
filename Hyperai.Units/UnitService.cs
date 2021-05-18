@@ -50,7 +50,7 @@ namespace Hyperai.Units
                         }
                         else
                         {
-                            MessageComponent[] chain = {new Plain("❌你没能在时限内提供完整参数, 该操作已取消.")};
+                            MessageElement[] chain = {new Plain("❌你没能在时限内提供完整参数, 该操作已取消.")};
                             context.ReplyAsync(new MessageChain(chain)).Wait();
                         }
 
@@ -174,7 +174,7 @@ namespace Hyperai.Units
             {
                 if (failureMessage != null)
                 {
-                    var chain = new MessageChain(new MessageComponent[]
+                    var chain = new MessageChain(new MessageElement[]
                         {new Plain(entry.Action.Name + ": " + failureMessage)});
                     context.ReplyAsync(chain).Wait();
                 }
@@ -200,7 +200,7 @@ namespace Hyperai.Units
                         {
                             _ when para.ParameterType == typeof(string) => _formatter.Format(names[para.Name!]),
                             _ when para.ParameterType == typeof(MessageChain) => names[para.Name!],
-                            _ when typeof(MessageComponent).IsAssignableFrom(para.ParameterType) => names[para.Name!]
+                            _ when typeof(MessageElement).IsAssignableFrom(para.ParameterType) => names[para.Name!]
                                 .FirstOrDefault(x => x.GetType() == para.ParameterType),
                             // _ when para.ParameterType == typeof(Member) && names[para.Name].Any(x
                             // => x is At) => GetMember(((At)names[para.Name].First(x => x is At)).TargetId),
