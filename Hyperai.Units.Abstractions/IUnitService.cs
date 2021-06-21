@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Hyperai.Messages.ConcreteModels;
+using Hyperai.Relations;
 
 namespace Hyperai.Units
 {
@@ -25,6 +26,6 @@ namespace Hyperai.Units
         /// <param name="channel">所要占据的通道</param>
         /// <param name="action"> 目标委托</param>
         /// <param name="timeout">自加入起的一定时间后无效化</param>
-        void WaitOne(Channel channel, ActionDelegate action, TimeSpan timeout);
+        void WaitOne(Signature channel, ActionDelegate action, TimeSpan timeout);
     }
 }

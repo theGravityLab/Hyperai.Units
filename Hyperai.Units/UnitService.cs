@@ -23,7 +23,7 @@ namespace Hyperai.Units
 
         private readonly IServiceProvider _provider;
 
-        private readonly Dictionary<Channel, ConcurrentQueue<QueueEntry>> invaders = new();
+        private readonly Dictionary<Signature, ConcurrentQueue<QueueEntry>> invaders = new();
         private IEnumerable<ActionEntry> entries;
 
         public UnitService(IServiceProvider provider, IMessageChainFormatter formatter, IMessageChainParser parser,
@@ -39,8 +39,7 @@ namespace Hyperai.Units
         {
             var flag = false;
             foreach (var channel in invaders.Keys)
-                if (channel.Match(context.User.Identity,
-                    context.Type == MessageEventType.Group ? context.Group.Identity : null))
+                if (context.User switch { Member member => channel.Match(member), Friend friend => channel.Match(friend), _ => false })
                 {
                     if (invaders[channel].TryDequeue(out var action))
                     {
@@ -71,7 +70,7 @@ namespace Hyperai.Units
             }
         }
 
-        public void WaitOne(Channel channel, ActionDelegate action, TimeSpan timeout)
+        public void WaitOne(Signature channel, ActionDelegate action, TimeSpan timeout)
         {
             if (!invaders.ContainsKey(channel)) invaders.Add(channel, new ConcurrentQueue<QueueEntry>());
             invaders[channel].Enqueue(new QueueEntry(action, timeout));
@@ -260,7 +259,6 @@ namespace Hyperai.Units
                         }
                     }
                 });
-
             }
             else
             {
