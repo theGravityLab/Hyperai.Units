@@ -46,14 +46,8 @@ namespace Hyperai.Units
                         if (DateTime.Now < action.CreatedAt + action.Timeout)
                         {
                             action.Action(context);
+                            flag = true;
                         }
-                        else
-                        {
-                            MessageElement[] chain = {new Plain("❌你没能在时限内提供完整参数, 该操作已取消.")};
-                            context.ReplyAsync(new MessageChain(chain)).Wait();
-                        }
-
-                        flag = true;
                     }
                     else
                     {
@@ -234,7 +228,7 @@ namespace Hyperai.Units
             }
 
             var unit = UnitFactory.Instance.CreateUnit(entry.Unit, context, _provider);
-            _logger.LogInformation("Action hit: {Entry}", entry);
+            _logger.LogInformation("Action hit: {}", entry);
 
             #region IF_ASYNC_ACTION
 
