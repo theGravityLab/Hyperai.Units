@@ -15,7 +15,7 @@ namespace Hyperai.Units
             return services;
         }
 
-        public static IHyperaiApplicationBuilder UseUnits(this IHyperaiApplicationBuilder builder)
+        public static HyperaiServerOptionsBuilder UseUnits(this HyperaiServerOptionsBuilder builder)
         {
             builder.Use<UnitMiddleware>();
             return builder;
