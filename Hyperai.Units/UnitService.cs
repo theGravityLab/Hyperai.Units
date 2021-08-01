@@ -228,7 +228,7 @@ namespace Hyperai.Units
             }
 
             var unit = UnitFactory.Instance.CreateUnit(entry.Unit, context, _provider);
-            _logger.LogInformation("Action hit: {}", entry);
+            _logger.LogInformation("Action hit: {Entry}", entry);
 
             #region IF_ASYNC_ACTION
 
