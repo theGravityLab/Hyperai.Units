@@ -39,7 +39,10 @@ namespace Hyperai.Units
         {
             var flag = false;
             foreach (var channel in invaders.Keys)
-                if (context.User switch { Member member => channel.Match(member), Friend friend => channel.Match(friend), _ => false })
+                if (context.User switch
+                {
+                    Member member => channel.Match(member), Friend friend => channel.Match(friend), _ => false
+                })
                 {
                     if (invaders[channel].TryDequeue(out var action))
                     {

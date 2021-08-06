@@ -38,6 +38,7 @@ namespace Hyperai.Units
                 return true;
             }
 
+
             stopwatch.Start();
             var context = new MessageContext
             {
@@ -70,8 +71,14 @@ namespace Hyperai.Units
             stopwatch.Restart();
             _service.Handle(context);
             stopwatch.Stop();
-            _logger.LogDebug(
-                "Handling for Unit Actions took {} milliseconds(preparing = {}): {}",stopwatch.ElapsedMilliseconds + prepare,prepare,context.Message);
+            if (stopwatch.ElapsedMilliseconds > 1000)
+                _logger.LogWarning(
+                    "Handling for Unit Actions took {Total} milliseconds(preparing = {Prepare}): {Message}",
+                    stopwatch.ElapsedMilliseconds + prepare, prepare, context.Message);
+            else
+                _logger.LogDebug(
+                    "Handling for Unit Actions took {Total} milliseconds(preparing = {Prepare}): {Message}",
+                    stopwatch.ElapsedMilliseconds + prepare, prepare, context.Message);
             stopwatch.Reset();
             return true;
         }

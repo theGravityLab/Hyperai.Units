@@ -33,10 +33,7 @@ namespace Hyperai.Units.Attributes
                 addedLength = match.Index + match.Length;
             }
 
-            if (addedLength < pattern.Length)
-            {
-                patternBuilder.Append(pattern[addedLength..]);
-            }
+            if (addedLength < pattern.Length) patternBuilder.Append(pattern[addedLength..]);
             Pattern = new Regex(patternBuilder.ToString());
         }
 
