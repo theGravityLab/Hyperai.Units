@@ -8,7 +8,7 @@
     <Authors>GravityLab</Authors>
     <Company>Unicore</Company>
     <PackageDescription>Hyperai.Units.Abstractions</PackageDescription>
-    <RepositoryUrl>https://github.com/theGravityLab/Hyperai.Units.Abstractions</RepositoryUrl>
+    <RepositoryUrl>https://github.com/theGravityLab/Hyperai.Units</RepositoryUrl>
     <Product>Hyperai.Units</Product>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
